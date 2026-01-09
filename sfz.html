@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>身份证核验系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: -70px;
+            left: -30px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group label i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 18px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .error {
+            color: var(--warning);
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .button {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .button:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+            transform: translateY(-2px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            background: var(--light-gray);
+            color: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-container {
+            display: none;
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #4cc9f0, #4361ee);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .result-content {
+            padding: 25px;
+            background-color: #f8f9fa;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .spinner {
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-left: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--gray);
+            font-size: 14px;
+            padding: 20px;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--light);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            overflow: hidden;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 25px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-card i {
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .info-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .info-card p {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .header p {
+                font-size: 14px;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <i class="fas fa-building"></i>
+                <h1>身份证核验系统</h1>
+                <p>验证姓名与身份信息是否匹配</p>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="form">信息验证</div>
+                <div class="tab" data-tab="info">系统说明</div>
+            </div>
+            
+            <div class="tab-content active" id="form-tab">
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="realName"><i class="fas fa-user"></i> 姓名</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-signature"></i>
+                            <input type="text" id="realName" placeholder="请输入姓名">
+                        </div>
+                        <div class="error" id="nameError">姓名不能为空</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cardNo"><i class="fas fa-id-card"></i> 身份证号码</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-fingerprint"></i>
+                            <input type="text" id="cardNo" placeholder="请输入18位身份证号码">
+                        </div>
+                        <div class="error" id="cardError">身份证号格式错误，请输入18位数字或X</div>
+                    </div>
+                    
+                    <button class="button" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i> 查询
+                    </button>
+                    
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <div>正在验证，请稍候...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="info-tab">
+                <div class="form-container">
+                    <h3 style="margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-info-circle"></i> 系统使用说明
+                    </h3>
+                    <p>作者：乐神</p>
+                    
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>安全验证</h3>
+                            <p>所有数据传输均加密处理</p>
+                        </div>
+                        
+                        <div class="info-card">
+                            <i class="fas fa-bolt"></i>
+                            <h3>快速响应</h3>
+                            <p>实时验证</p>
+                        </div>
+                        
+                        <div class="info-card">
+                            <i class="fas fa-database"></i>
+                            <h3>数据权威</h3>
+                            <p>对接gov系统数据库</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 25px; background: var(--light); padding: 20px; border-radius: 8px;">
+                        <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-lightbulb"></i> 使用提示
+                        </h4>
+                        <ul style="padding-left: 20px;">
+                            <li style="margin-bottom: 10px;">请确保输入的姓名与身份证信息完全一致</li>
+                            <li style="margin-bottom: 10px;">身份证号码需为18位有效号码</li>
+                            <li>系统仅用于信息预检</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card result-container" id="resultContainer">
+            <div class="result-header">
+                <i class="fas fa-clipboard-check"></i>
+                <h2>预检结果</h2>
+            </div>
+            <div class="result-content" id="resultContent"></div>
+        </div>
+        
+        <div class="footer">
+            <p><a ></a></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const realNameInput = document.getElementById('realName');
+            const cardNoInput = document.getElementById('cardNo');
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingDiv = document.getElementById('loading');
+            const resultContainer = document.getElementById('resultContainer');
+            const resultContent = document.getElementById('resultContent');
+            const nameError = document.getElementById('nameError');
+            const cardError = document.getElementById('cardError');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // 标签切换功能
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // 身份证号格式验证
+            function validateCardNo(cardNo) {
+                return cardNo.length === 18 && /^[\dXx]+$/.test(cardNo);
+            }
+            
+            // 姓名验证
+            function validateName(name) {
+                return name.trim().length > 0;
+            }
+            
+            // 输入验证
+            function validateInputs() {
+                const nameValid = validateName(realNameInput.value);
+                const cardValid = validateCardNo(cardNoInput.value);
+                
+                nameError.style.display = nameValid ? 'none' : 'block';
+                cardError.style.display = cardValid ? 'none' : 'block';
+                
+                submitBtn.disabled = !(nameValid && cardValid);
+            }
+            
+            // 监听输入变化
+            realNameInput.addEventListener('input', validateInputs);
+            cardNoInput.addEventListener('input', validateInputs);
+            
+            // 提交按钮点击事件
+            submitBtn.addEventListener('click', function() {
+                loadingDiv.style.display = 'flex';
+                resultContainer.style.display = 'none';
+                submitBtn.disabled = true;
+                
+                const realName = realNameInput.value.trim();
+                const cardNo = cardNoInput.value;
+                
+                // 准备请求数据
+                const payload = {
+                    "entname": "深圳市腾讯计算机系统有限公司",
+                    "legalIdentityType": "IDCARD",
+                    "uniscid": "91440300708461136T",
+                    "type": 1,
+                    "dom": "喵喵喵",
+                    "legalName": realName,
+                    "legalIdentity": cardNo
+                };
+                
+                // 准备请求头
+                const headers = {
+                    "Accept": "application/json, text/plain, */*",
+                    "Accept-Language": "zh-CN,zh-Hans;q=0.9",
+                    "Content-Type": "application/json",
+                    "Origin": "https://ywtb.ga.tj.gov.cn",
+                    "Referer": "https://ywtb.ga.tj.gov.cn/",
+                };
+                
+                // 发送请求
+                fetch('https://ywtb.ga.tj.gov.cn/serviceportal/legalUser/register/preCheck', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`请求失败，状态码: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingDiv.style.display = 'none';
+                    submitBtn.disabled = false;
+                    
+                    // 格式化并显示结果
+                    resultContent.textContent = JSON.stringify(data, null, 4);
+                    resultContainer.style.display = 'block';
+                    
+                    // 滚动到结果区域
+                    resultContainer.scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(error => {
+                    loadingDiv.style.display = 'none';
+                    submitBtn.disabled = false;
+                    
+                    // 显示错误信息
+                    resultContent.textContent = `请求失败: ${error.message}`;
+                    resultContainer.style.display = 'block';
+                    resultContainer.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+            
+            // 初始验证
+            validateInputs();
+        });
+    </script>
+</body>
+</html>
